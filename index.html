@@ -3,8 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>شجرة الروابط الخاصة بي</title>
+  <title>شجرة الروابط الاحترافية | LinkTree Pro</title>
   
+  <!-- خط خط عربي حديث Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
   <!-- Firebase SDKs (v10 compat) -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
@@ -12,14 +20,16 @@
 
   <style>
     :root {
-      --bg-color: #0f172a;
-      --card-bg: rgba(30, 41, 59, 0.75);
+      --bg-color: #0b0f19;
+      --card-bg: rgba(22, 30, 49, 0.65);
       --text-color: #f8fafc;
       --accent-color: #38bdf8;
-      --card-hover: rgba(51, 65, 85, 0.9);
+      --accent-gradient: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-hover-border: rgba(56, 189, 248, 0.5);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Alexandria', sans-serif; }
 
     body {
       background-color: var(--bg-color);
@@ -28,10 +38,15 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 30px 15px;
-      transition: background-color 0.4s ease, color 0.4s ease;
+      padding: 20px 15px 80px 15px;
+      transition: all 0.4s ease;
+      background-image: 
+        radial-gradient(at 20% 20%, rgba(56, 189, 248, 0.12) 0px, transparent 50%),
+        radial-gradient(at 80% 80%, rgba(129, 140, 248, 0.12) 0px, transparent 50%);
+      background-attachment: fixed;
     }
 
+    /* Container */
     .container {
       width: 100%;
       max-width: 480px;
@@ -41,7 +56,7 @@
       gap: 20px;
     }
 
-    /* هيدر وشريط التنقل العلوي */
+    /* Top Navigation Bar */
     .top-nav {
       width: 100%;
       max-width: 480px;
@@ -49,151 +64,250 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 10px;
-      gap: 10px;
-      flex-wrap: wrap;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      padding: 10px 16px;
+      border-radius: 50px;
+      border: 1px solid var(--card-border);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+
+    .user-status {
+      font-size: 0.85rem;
+      font-weight: 600;
+      opacity: 0.9;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
     }
 
     .btn-auth {
-      background: var(--accent-color);
+      background: var(--accent-gradient);
       color: #000;
       border: none;
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-weight: bold;
+      padding: 8px 18px;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 0.85rem;
       cursor: pointer;
       display: flex;
       align-items: center;
       gap: 8px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
     }
 
+    .btn-auth:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(56, 189, 248, 0.5);
+    }
+
+    /* Share Box Banner */
     .share-box {
       width: 100%;
-      background: rgba(56, 189, 248, 0.1);
+      background: rgba(56, 189, 248, 0.08);
       border: 1px dashed var(--accent-color);
-      border-radius: 12px;
-      padding: 10px;
+      border-radius: 16px;
+      padding: 12px;
       text-align: center;
       display: none;
+      backdrop-filter: blur(10px);
     }
 
-    .share-box input {
-      width: 70%;
-      padding: 6px;
-      border-radius: 6px;
-      border: 1px solid #475569;
+    .share-box p { font-size: 0.85rem; margin-bottom: 8px; opacity: 0.9; }
+
+    .share-controls {
+      display: flex;
+      gap: 8px;
+    }
+
+    .share-controls input {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
       background: #0f172a;
       color: #fff;
+      font-size: 0.8rem;
+      text-align: left;
+      direction: ltr;
+    }
+
+    /* Profile Header */
+    .profile-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
       text-align: center;
     }
 
-    /* صورة الملف الشخصي والبيانات */
+    .profile-avatar-wrapper {
+      position: relative;
+    }
+
     .profile-img {
-      width: 110px;
-      height: 110px;
+      width: 115px;
+      height: 115px;
       border-radius: 50%;
       object-fit: cover;
       border: 3px solid var(--accent-color);
-      box-shadow: 0 0 20px rgba(0,0,0,0.4);
+      box-shadow: 0 0 25px rgba(56, 189, 248, 0.3);
+      transition: transform 0.3s ease;
     }
 
-    .profile-name { font-size: 1.5rem; font-weight: 700; text-align: center; }
-    .profile-bio { font-size: 0.95rem; opacity: 0.85; text-align: center; }
+    .profile-img:hover {
+      transform: scale(1.05);
+    }
 
-    /* القرص الموسيقي الدوار */
+    .profile-name {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .profile-bio {
+      font-size: 0.95rem;
+      color: #94a3b8;
+      max-width: 380px;
+      line-height: 1.5;
+    }
+
+    /* Vinyl Record Player */
     .music-box {
       width: 100%;
       background: var(--card-bg);
-      backdrop-filter: blur(10px);
-      border-radius: 16px;
-      padding: 15px;
+      backdrop-filter: blur(16px);
+      border-radius: 20px;
+      padding: 16px;
       display: flex;
       align-items: center;
       gap: 15px;
-      border: 1px solid rgba(255,255,255,0.1);
+      border: 1px solid var(--card-border);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
     }
 
     .vinyl-record {
-      width: 60px;
-      height: 60px;
+      width: 65px;
+      height: 65px;
       background: radial-gradient(circle, #333 20%, #111 21%, #111 40%, #222 41%, #000 100%);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      box-shadow: 0 0 15px rgba(0,0,0,0.6);
       flex-shrink: 0;
+      position: relative;
     }
 
     .vinyl-record.spinning {
-      animation: spin 3s linear infinite;
+      animation: spin 3.5s linear infinite;
     }
 
     .vinyl-center {
-      width: 20px;
-      height: 20px;
+      width: 22px;
+      height: 22px;
       background: var(--accent-color);
       border-radius: 50%;
-      border: 2px solid #fff;
+      border: 3px solid #fff;
     }
 
     @keyframes spin { 100% { transform: rotate(360deg); } }
 
     .audio-controls { flex: 1; }
-    .audio-controls audio { width: 100%; height: 32px; }
+    .audio-controls audio { width: 100%; height: 35px; border-radius: 10px; }
 
-    /* مشغل سبوتيفاي */
-    .spotify-box { width: 100%; border-radius: 12px; overflow: hidden; }
+    /* Spotify Embed Box */
+    .spotify-box {
+      width: 100%;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      border: 1px solid var(--card-border);
+    }
 
-    /* قائمة الروابط */
+    /* Links Container & Items */
     .links-list { width: 100%; display: flex; flex-direction: column; gap: 14px; }
 
     .link-item {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 16px 20px;
+      padding: 18px 22px;
       background: var(--card-bg);
-      backdrop-filter: blur(8px);
+      backdrop-filter: blur(16px);
       color: var(--text-color);
       text-decoration: none;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      border: 1px solid var(--card-border);
       font-weight: 600;
-      transition: all 0.25s ease;
+      font-size: 1rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
     }
 
     .link-item:hover {
-      background: var(--card-hover);
-      transform: translateY(-2px);
-      border-color: var(--accent-color);
+      background: rgba(30, 41, 59, 0.85);
+      transform: translateY(-3px);
+      border-color: var(--card-hover-border);
+      box-shadow: 0 10px 25px rgba(56, 189, 248, 0.2);
     }
 
-    .link-left { display: flex; align-items: center; gap: 12px; }
-    .link-icon { font-size: 1.3rem; }
-    .badge { font-size: 0.75rem; padding: 4px 8px; background: var(--accent-color); color: #000; border-radius: 6px; font-weight: bold; }
+    .link-left { display: flex; align-items: center; gap: 14px; }
+    .link-icon { font-size: 1.4rem; display: flex; align-items: center; }
+    .badge {
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      background: var(--accent-gradient);
+      color: #000;
+      border-radius: 20px;
+      font-weight: 700;
+    }
 
-    /* زر وقائمة لوحة التعديل للآدمن */
+    /* Floating Admin Button */
     .admin-btn {
       position: fixed;
-      bottom: 20px;
-      left: 20px;
-      background: var(--accent-color);
+      bottom: 25px;
+      left: 25px;
+      background: var(--accent-gradient);
       color: #000;
       border: none;
-      padding: 12px 20px;
-      border-radius: 30px;
-      font-weight: bold;
+      padding: 14px 24px;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 0.95rem;
       cursor: pointer;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+      box-shadow: 0 10px 25px rgba(56, 189, 248, 0.4);
       display: none;
+      align-items: center;
+      gap: 10px;
+      z-index: 900;
+      transition: all 0.3s ease;
     }
 
-    /* Modal نافذة التعديل */
+    .admin-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 12px 30px rgba(56, 189, 248, 0.6);
+    }
+
+    /* Modal Sheet for Admin */
     .modal {
       display: none;
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.85);
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
       z-index: 1000;
       overflow-y: auto;
       padding: 20px;
@@ -202,47 +316,134 @@
     }
 
     .modal-content {
-      background: #1e293b;
+      background: #111827;
+      border: 1px solid var(--card-border);
       width: 100%;
-      max-width: 500px;
-      padding: 25px;
-      border-radius: 16px;
+      max-width: 520px;
+      padding: 30px;
+      border-radius: 24px;
       color: #fff;
       display: flex;
       flex-direction: column;
-      gap: 15px;
+      gap: 18px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
     }
 
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding-bottom: 12px;
+    }
+
+    .modal-header h2 { font-size: 1.3rem; font-weight: 700; }
+
+    .modal-content label { font-size: 0.85rem; color: #94a3b8; display: flex; flex-direction: column; gap: 6px; }
     .modal-content input, .modal-content select {
-      width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #fff;
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #374151;
+      background: #1f2937;
+      color: #fff;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
     }
 
-    .color-pickers { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .btn { padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-    .btn-primary { background: var(--accent-color); color: #000; }
-    .btn-danger { background: #ef4444; color: #fff; }
-    .btn-close { background: #64748b; color: #fff; }
+    .modal-content input:focus { border-color: var(--accent-color); }
+
+    .color-pickers { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .btn {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary { background: var(--accent-gradient); color: #000; }
+    .btn-danger { background: #ef4444; color: #fff; padding: 6px 12px; font-size: 0.8rem; border-radius: 8px; }
+    .btn-close { background: #374151; color: #fff; }
+
+    /* Toast Notification System */
+    #toast-container {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .toast {
+      background: #1e293b;
+      color: #fff;
+      border: 1px solid var(--accent-color);
+      padding: 12px 24px;
+      border-radius: 30px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: fadeIn 0.3s forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
 <body>
 
+  <!-- Toast Messages -->
+  <div id="toast-container"></div>
+
+  <!-- Top Navigation Bar -->
   <div class="top-nav">
-    <div id="user-status">صفحة عامة</div>
-    <button id="auth-btn" class="btn-auth" onclick="toggleAuth()">🔑 تسجيل الدخول (Google)</button>
+    <div class="user-status">
+      <span class="status-dot"></span>
+      <span id="user-status-text">عرض عام</span>
+    </div>
+    <button id="auth-btn" class="btn-auth" onclick="toggleAuth()">
+      <i class="fa-solid fa-right-to-bracket"></i> دخول بـ Google
+    </button>
   </div>
 
+  <!-- Share Page Banner for Owner -->
   <div id="share-container" class="share-box">
-    <span>🔗 رابط صفحتي الخاص: </span>
-    <input type="text" id="my-share-link" readonly>
-    <button class="btn btn-primary" onclick="copyMyLink()">نسخ</button>
+    <p>✨ هذا هو رابط صفحتي الشخصية العام، يمكنك مشاركته مع أي شخص:</p>
+    <div class="share-controls">
+      <input type="text" id="my-share-link" readonly>
+      <button class="btn btn-primary" onclick="copyMyLink()"><i class="fa-solid fa-copy"></i> نسخ</button>
+    </div>
   </div>
 
-  <div class="container" style="margin-top: 15px;">
-    <img id="view-avatar" class="profile-img" src="https://via.placeholder.com/110" alt="Avatar">
-    <div id="view-name" class="profile-name">جاري التحميل...</div>
-    <div id="view-bio" class="profile-bio">مرحباً بك في صفحة الروابط.</div>
+  <!-- Profile & Content Container -->
+  <div class="container" style="margin-top: 10px;">
+    
+    <div class="profile-card">
+      <div class="profile-avatar-wrapper">
+        <img id="view-avatar" class="profile-img" src="https://via.placeholder.com/115" alt="Avatar">
+      </div>
+      <div id="view-name" class="profile-name">جاري التحميل...</div>
+      <div id="view-bio" class="profile-bio">مرحباً بك في صفحة الروابط.</div>
+    </div>
 
-    <!-- مشغل MP3 القرص الدوار -->
+    <!-- MP3 Audio Player with Spinning Vinyl -->
     <div id="audio-box" class="music-box" style="display:none;">
       <div id="vinyl-record" class="vinyl-record">
         <div class="vinyl-center"></div>
@@ -252,59 +453,65 @@
       </div>
     </div>
 
-    <!-- مشغل Spotify -->
+    <!-- Spotify Player Embed -->
     <div id="spotify-box" class="spotify-box" style="display:none;"></div>
 
-    <!-- قائمة الروابط -->
+    <!-- Links List -->
     <div id="links-container" class="links-list"></div>
   </div>
 
-  <button id="open-admin-btn" class="admin-btn" onclick="openAdmin()">⚙️ تعديل صفحتي</button>
+  <!-- Admin Controls Floating Button -->
+  <button id="open-admin-btn" class="admin-btn" onclick="openAdmin()">
+    <i class="fa-solid fa-pen-to-square"></i> تعديل صفحتي
+  </button>
 
-  <!-- نافذة التعديل الخاص بمالك الصفحة -->
+  <!-- Admin Settings Modal -->
   <div id="adminModal" class="modal">
     <div class="modal-content">
-      <h2>⚙️ لوحة تحكم الصفحة</h2>
+      <div class="modal-header">
+        <h2>⚙️ لوحة تحكم وتعديل الصفحة</h2>
+        <button class="btn btn-close" onclick="closeAdmin()" style="padding: 6px 12px;">✕</button>
+      </div>
       
-      <label>الاسم: <input type="text" id="input-name"></label>
-      <label>الوصف: <input type="text" id="input-bio"></label>
-      <label>رابط الصورة الشخصية: <input type="text" id="input-avatar"></label>
+      <label>الاسم الظاهر: <input type="text" id="input-name" placeholder="أدخل اسمك الكرابي"></label>
+      <label>الوصف / السيرة الذاتية: <input type="text" id="input-bio" placeholder="أكتب نبذة قصيرة عنك"></label>
+      <label>رابط الصورة الشخصية: <input type="text" id="input-avatar" placeholder="https://..."></label>
 
-      <h3>🎵 الموسيقى والصوتيات</h3>
+      <h3 style="font-size: 1rem; color: var(--accent-color); margin-top: 10px;">🎵 الموسيقى والصوتيات</h3>
       <label>رابط MP3 مباشر: <input type="text" id="input-audio" placeholder="https://example.com/song.mp3"></label>
       <label>رابط تراك Spotify: <input type="text" id="input-spotify" placeholder="https://open.spotify.com/track/..."></label>
 
-      <h3>🎨 الألوان والثيم</h3>
+      <h3 style="font-size: 1rem; color: var(--accent-color); margin-top: 10px;">🎨 الألوان والثيم</h3>
       <div class="color-pickers">
-        <label>خلفية الصفحة: <input type="color" id="input-bg-color" value="#0f172a"></label>
-        <label>لون البطاقة: <input type="color" id="input-card-bg" value="#1e293b"></label>
+        <label>خلفية الصفحة: <input type="color" id="input-bg-color" value="#0b0f19"></label>
+        <label>لون البطاقة: <input type="color" id="input-card-bg" value="#161e31"></label>
         <label>اللون الرئيسي: <input type="color" id="input-accent" value="#38bdf8"></label>
         <label>لون النص: <input type="color" id="input-text-color" value="#f8fafc"></label>
       </div>
 
-      <h3>🔗 إضافة رابط جديد</h3>
-      <input type="text" id="new-title" placeholder="عنوان الرابط">
+      <h3 style="font-size: 1rem; color: var(--accent-color); margin-top: 10px;">🔗 إضافة رابط أو ملف جديد</h3>
+      <input type="text" id="new-title" placeholder="عنوان الرابط (مثلاً: قناتي على يوتيوب)">
       <input type="text" id="new-url" placeholder="الرابط الأصلي (https://...)">
-      <input type="text" id="new-icon" placeholder="إيموجي (مثال: 🎵 , 📷 , 🌐)">
+      <input type="text" id="new-icon" placeholder="إيموجي أو أيقونة (مثال: 🎵 , 📷 , 🌐)">
       <select id="new-type">
         <option value="link">رابط عادي</option>
         <option value="download">ملف للتحميل 📥</option>
       </select>
-      <button class="btn btn-primary" onclick="addLink()">إضافة للقائمة</button>
+      <button class="btn btn-primary" onclick="addLink()"><i class="fa-solid fa-plus"></i> إضافة للقائمة</button>
 
-      <h3>📋 الروابط الحالية</h3>
+      <h3 style="font-size: 1rem; color: var(--accent-color); margin-top: 10px;">📋 الروابط المضافة حالياً</h3>
       <div id="admin-links-list"></div>
 
       <div style="display: flex; gap: 10px; margin-top: 15px;">
-        <button class="btn btn-primary" style="flex:1;" onclick="saveToFirebase()">حفظ التعديلات في السحابة</button>
-        <button class="btn btn-close" onclick="closeAdmin()">إغلاق</button>
+        <button class="btn btn-primary" style="flex:1;" onclick="saveToFirebase()"><i class="fa-solid fa-floppy-disk"></i> حفظ التغييرات</button>
+        <button class="btn btn-close" onclick="closeAdmin()">إلغاء</button>
       </div>
     </div>
   </div>
 
   <script>
     // -------------------------------------------------------------
-    // إعدادات الفايربيس الخاصة بمشروعك (mytreelincs)
+    // 1. إعدادات Firebase الخاصة بمشروعك (mytreelincs)
     // -------------------------------------------------------------
     const firebaseConfig = {
       apiKey: "AIzaSyDA3zAKOlWPvh8dv8OP57HMSh_yLCvntE8",
@@ -317,76 +524,101 @@
     };
 
     // تهيئة الفايربيس
-    firebase.initializeApp(firebaseConfig);
+    try {
+      firebase.initializeApp(firebaseConfig);
+    } catch (e) {
+      console.error("Firebase init error: ", e);
+    }
+    
     const auth = firebase.auth();
     const db = firebase.firestore();
 
     let currentUser = null;
-    let pageUserId = null; // ID الصفحة المعروضة حالياً
+    let pageUserId = null;
 
     let configData = {
       name: "مستخدم جديد",
       bio: "أهلاً بك في صفحتي الشخصية!",
-      avatar: "https://via.placeholder.com/110",
+      avatar: "https://via.placeholder.com/115",
       audioUrl: "",
       spotifyUrl: "",
-      colors: { bg: "#0f172a", card: "#1e293b", accent: "#38bdf8", text: "#f8fafc" },
+      colors: { bg: "#0b0f19", card: "#161e31", accent: "#38bdf8", text: "#f8fafc" },
       links: []
     };
 
-    // معرفة أيا صفحة يتم عرضها من خلال رابط الـ URL: ?u=USER_ID
+    // Toast Notification helper
+    function showToast(msg) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.innerHTML = `<i class="fa-solid fa-circle-info"></i> ${msg}`;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3500);
+    }
+
+    // جلب الـ USER ID من الرابط: ?u=USER_ID
     const urlParams = new URLSearchParams(window.location.search);
     pageUserId = urlParams.get('u');
 
-    // مراقبة تسجيل الدخول
+    // مراقبة حالة تسجيل الدخول
     auth.onAuthStateChanged((user) => {
       currentUser = user;
       const authBtn = document.getElementById('auth-btn');
       const adminBtn = document.getElementById('open-admin-btn');
-      const statusText = document.getElementById('user-status');
+      const statusText = document.getElementById('user-status-text');
       const shareContainer = document.getElementById('share-container');
 
       if (user) {
-        authBtn.innerText = `🚪 خروج (${user.displayName ? user.displayName.split(' ')[0] : 'حسابي'})`;
+        authBtn.innerHTML = `<i class="fa-solid fa-right-from-bracket"></i> خروج (${user.displayName ? user.displayName.split(' ')[0] : 'حسابي'})`;
         
-        // تجهيز رابط المشاركة الخاص بالمالك
+        // تجهيز رابط مشاركة الصفحة
         const myUrl = window.location.origin + window.location.pathname + `?u=${user.uid}`;
         document.getElementById('my-share-link').value = myUrl;
         shareContainer.style.display = 'block';
 
-        // إذا الرابط ما بيه u=USER_ID، افتح صفحة المستخدم الحالي تلقائياً
+        // إذا كان الرابط بدون ?u= فتح صفحة المالك المسجل مباشرة
         if (!pageUserId) {
           pageUserId = user.uid;
           window.history.pushState({}, '', `?u=${user.uid}`);
         }
 
-        // إذا المستخدم هو صاحب الصفحة -> أظهر زر التعديل
+        // إظهار زر التعديل إذا كان المستخدم الحالي هو المالك
         if (currentUser.uid === pageUserId) {
-          adminBtn.style.display = 'block';
-          statusText.innerText = "أنت في صفحتك الشخصية (المالك)";
+          adminBtn.style.display = 'flex';
+          statusText.innerText = "أنت مالك هذه الصفحة";
         } else {
           adminBtn.style.display = 'none';
-          statusText.innerText = "عرض صفحة شخص آخر";
+          statusText.innerText = "عرض صفحة زائر";
         }
       } else {
-        authBtn.innerText = "🔑 تسجيل الدخول (Google)";
+        authBtn.innerHTML = `<i class="fa-solid fa-right-to-bracket"></i> دخول بـ Google`;
         adminBtn.style.display = 'none';
         shareContainer.style.display = 'none';
-        statusText.innerText = pageUserId ? "عرض صفحة زائر" : "يرجى تسجيل الدخول أو فتح رابط شخص معين";
+        statusText.innerText = pageUserId ? "عرض صفحة زائر" : "سجل الدخول لإنشاء رابطك";
       }
 
       loadPageData();
     });
 
-    // تسجيل الدخول أو الخروج
+    // تسجيل الدخول والخروج بـ Google
     function toggleAuth() {
       if (auth.currentUser) {
         auth.signOut().then(() => {
-          window.location.href = window.location.pathname; // إعادة توجيه للصفحة الرئيسية
+          showToast("تم تسجيل الخروج بنجاح");
+          window.location.href = window.location.pathname;
         });
       } else {
         const provider = new firebase.auth.GoogleAuthProvider();
-        auth.signInWithPopup(provider).catch(err => alert("خطأ بتسجيل الدخول: " + err.message));
+        auth.signInWithPopup(provider).then((result) => {
+          showToast(`أهلاً بك ${result.user.displayName}`);
+        }).catch((err) => {
+          console.error(err);
+          if (err.code === "auth/operation-not-allowed") {
+            alert("⚠️ تنبيه: يرجى تفعيل تسجيل الدخول بـ Google داخل Firebase Console -> Authentication!");
+          } else {
+            showToast("خطأ بتسجيل الدخول: " + err.message);
+          }
+        });
       }
     }
 
@@ -395,49 +627,48 @@
       const copyText = document.getElementById("my-share-link");
       copyText.select();
       navigator.clipboard.writeText(copyText.value);
-      alert("تم نسخ رابط صفحتك بنجاح! تدخله وتقدر تدزه لأي شخص.");
+      showToast("تم نسخ رابط صفحتك إلى الحافظة! 📋");
     }
 
-    // جلب بيانات الصفحة الحالية من Firestore
+    // جلب البيانات من قاعدة بيانات Firestore
     function loadPageData() {
       if (!pageUserId) {
-        document.getElementById('view-name').innerText = "قم بتسجيل الدخول لإنشاء رابطك الخاص";
-        document.getElementById('view-bio').innerText = "أو اطلب رابط الصفحة من صاحبها لمشاهدتها.";
+        document.getElementById('view-name').innerText = "أنشئ شجرة روابطك الخاصة الآن!";
+        document.getElementById('view-bio').innerText = "اضغط على زر 'تسجيل الدخول' بالأعلى لإنشاء حسابك ورابطك الخاص مجاناً.";
         return;
       }
 
       db.collection('users').doc(pageUserId).get().then((doc) => {
         if (doc.exists) {
-          configData = doc.data();
+          configData = Object.assign(configData, doc.data());
         } else if (currentUser && currentUser.uid === pageUserId) {
-          // إنشاء بيانات افتراضية إذا كان حساب جديد
           configData.name = currentUser.displayName || "مستخدم جديد";
-          configData.avatar = currentUser.photoURL || "https://via.placeholder.com/110";
-          saveToFirebase();
+          configData.avatar = currentUser.photoURL || "https://via.placeholder.com/115";
+          saveToFirebase(true);
         } else {
           document.getElementById('view-name').innerText = "الصفحة غير موجودة";
-          document.getElementById('view-bio').innerText = "تأكد من الرابط الصحيح.";
+          document.getElementById('view-bio').innerText = "يرجى التأكد من الرابط الصحيح.";
           return;
         }
         renderView();
-      }).catch(err => console.log(err));
+      }).catch(err => console.error(err));
     }
 
-    // عرض واجهة الزائر
+    // عرض بيانات الواجهة
     function renderView() {
       document.getElementById('view-name').innerText = configData.name || "مستخدم";
       document.getElementById('view-bio').innerText = configData.bio || "";
-      document.getElementById('view-avatar').src = configData.avatar || "https://via.placeholder.com/110";
+      document.getElementById('view-avatar').src = configData.avatar || "https://via.placeholder.com/115";
 
-      // تطبيق الألوان
-      if(configData.colors) {
-        document.documentElement.style.setProperty('--bg-color', configData.colors.bg || '#0f172a');
-        document.documentElement.style.setProperty('--card-bg', configData.colors.card || '#1e293b');
+      // الألوان والثيم
+      if (configData.colors) {
+        document.documentElement.style.setProperty('--bg-color', configData.colors.bg || '#0b0f19');
+        document.documentElement.style.setProperty('--card-bg', configData.colors.card || '#161e31');
         document.documentElement.style.setProperty('--accent-color', configData.colors.accent || '#38bdf8');
         document.documentElement.style.setProperty('--text-color', configData.colors.text || '#f8fafc');
       }
 
-      // MP3
+      // MP3 Player
       const audioBox = document.getElementById('audio-box');
       const audioPlayer = document.getElementById('audio-player');
       const vinyl = document.getElementById('vinyl-record');
@@ -451,7 +682,7 @@
         audioBox.style.display = 'none';
       }
 
-      // Spotify
+      // Spotify Embed
       const spotifyBox = document.getElementById('spotify-box');
       if (configData.spotifyUrl) {
         let embedUrl = configData.spotifyUrl;
@@ -480,13 +711,13 @@
             <span class="link-icon">${item.icon || '🔗'}</span>
             <span>${item.title}</span>
           </div>
-          ${item.type === 'download' ? '<span class="badge">تحميل 📥</span>' : ''}
+          ${item.type === 'download' ? '<span class="badge">تحميل 📥</span>' : '<i class="fa-solid fa-chevron-left" style="font-size: 0.8rem; opacity:0.5;"></i>'}
         `;
         container.appendChild(a);
       });
     }
 
-    // فتح نافذة التحكم
+    // فتح لوحة التعديل
     function openAdmin() {
       document.getElementById('input-name').value = configData.name || '';
       document.getElementById('input-bio').value = configData.bio || '';
@@ -495,8 +726,8 @@
       document.getElementById('input-spotify').value = configData.spotifyUrl || '';
 
       if (configData.colors) {
-        document.getElementById('input-bg-color').value = configData.colors.bg || '#0f172a';
-        document.getElementById('input-card-bg').value = configData.colors.card || '#1e293b';
+        document.getElementById('input-bg-color').value = configData.colors.bg || '#0b0f19';
+        document.getElementById('input-card-bg').value = configData.colors.card || '#161e31';
         document.getElementById('input-accent').value = configData.colors.accent || '#38bdf8';
         document.getElementById('input-text-color').value = configData.colors.text || '#f8fafc';
       }
@@ -512,10 +743,10 @@
       list.innerHTML = '';
       (configData.links || []).forEach((item, index) => {
         const div = document.createElement('div');
-        div.style.cssText = "display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; background:#0f172a; padding:8px; border-radius:6px;";
+        div.style.cssText = "display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; background:#1f2937; padding:10px; border-radius:10px;";
         div.innerHTML = `
           <span>${item.icon || '🔗'} ${item.title}</span>
-          <button class="btn btn-danger" onclick="removeLink(${index})">حذف</button>
+          <button class="btn btn-danger" onclick="removeLink(${index})"><i class="fa-solid fa-trash"></i></button>
         `;
         list.appendChild(div);
       });
@@ -527,13 +758,14 @@
       const icon = document.getElementById('new-icon').value;
       const type = document.getElementById('new-type').value;
 
-      if (!title || !url) return alert('يرجى كتابة العنوان والرابط');
+      if (!title || !url) return showToast('يرجى كتابة العنوان والرابط أولاً!');
 
       if (!configData.links) configData.links = [];
       configData.links.push({ title, url, icon, type });
       document.getElementById('new-title').value = '';
       document.getElementById('new-url').value = '';
       renderAdminLinks();
+      showToast('تمت إضافة الرابط للقائمة');
     }
 
     function removeLink(index) {
@@ -541,28 +773,35 @@
       renderAdminLinks();
     }
 
-    // حفظ البيانات في قاعدة البيانات Firestore
-    function saveToFirebase() {
-      if (!currentUser || currentUser.uid !== pageUserId) return alert("غير مصرح لك بالعديل على هذه الصفحة!");
+    // حفظ البيانات في Firestore
+    function saveToFirebase(silent = false) {
+      if (!currentUser || currentUser.uid !== pageUserId) return showToast("غير مصرح لك بالتعديل!");
 
-      configData.name = document.getElementById('input-name').value;
-      configData.bio = document.getElementById('input-bio').value;
-      configData.avatar = document.getElementById('input-avatar').value;
-      configData.audioUrl = document.getElementById('input-audio').value;
-      configData.spotifyUrl = document.getElementById('input-spotify').value;
+      if (!silent) {
+        configData.name = document.getElementById('input-name').value;
+        configData.bio = document.getElementById('input-bio').value;
+        configData.avatar = document.getElementById('input-avatar').value;
+        configData.audioUrl = document.getElementById('input-audio').value;
+        configData.spotifyUrl = document.getElementById('input-spotify').value;
 
-      configData.colors = {
-        bg: document.getElementById('input-bg-color').value,
-        card: document.getElementById('input-card-bg').value,
-        accent: document.getElementById('input-accent').value,
-        text: document.getElementById('input-text-color').value
-      };
+        configData.colors = {
+          bg: document.getElementById('input-bg-color').value,
+          card: document.getElementById('input-card-bg').value,
+          accent: document.getElementById('input-accent').value,
+          text: document.getElementById('input-text-color').value
+        };
+      }
 
       db.collection('users').doc(currentUser.uid).set(configData).then(() => {
-        alert("تم حفظ معلوماتك بنجاح على قاعدة بيانات الفايربيس!");
-        renderView();
-        closeAdmin();
-      }).catch(err => alert("خطأ بالحفظ: " + err.message));
+        if (!silent) {
+          showToast("تم حفظ التعديلات بنجاح! 🎉");
+          renderView();
+          closeAdmin();
+        }
+      }).catch(err => {
+        console.error(err);
+        showToast("خطأ أثناء الحفظ: " + err.message);
+      });
     }
   </script>
 </body>
