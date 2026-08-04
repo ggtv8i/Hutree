@@ -1,122 +1,569 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mytreelincs | شجرة الروابط</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            color: #ffffff;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        .linktree-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            width: 100%;
-            max-width: 420px;
-            padding: 30px 20px;
-            border-radius: 20px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-        .profile-img {
-            width: 96px;
-            height: 96px;
-            border-radius: 50%;
-            border: 3px solid #38bdf8;
-            margin-bottom: 15px;
-            object-fit: cover;
-        }
-        .title {
-            font-size: 1.4rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: #f8fafc;
-        }
-        .bio {
-            font-size: 0.9rem;
-            color: #94a3b8;
-            margin-bottom: 25px;
-        }
-        .links-container {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        .link-btn {
-            display: block;
-            width: 100%;
-            padding: 14px 20px;
-            background: rgba(255, 255, 255, 0.1);
-            color: #ffffff;
-            text-decoration: none;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            transition: all 0.3s ease;
-        }
-        .link-btn:hover {
-            background: #38bdf8;
-            color: #0f172a;
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(56, 189, 248, 0.4);
-        }
-        .footer {
-            margin-top: 30px;
-            font-size: 0.75rem;
-            color: #64748b;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>شجرة الروابط الخاصة بي</title>
+  
+  <!-- Firebase SDKs (v10 compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.75);
+      --text-color: #f8fafc;
+      --accent-color: #38bdf8;
+      --card-hover: rgba(51, 65, 85, 0.9);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px 15px;
+      transition: background-color 0.4s ease, color 0.4s ease;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    /* هيدر وشريط التنقل العلوي */
+    .top-nav {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-auth {
+      background: var(--accent-color);
+      color: #000;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .share-box {
+      width: 100%;
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px dashed var(--accent-color);
+      border-radius: 12px;
+      padding: 10px;
+      text-align: center;
+      display: none;
+    }
+
+    .share-box input {
+      width: 70%;
+      padding: 6px;
+      border-radius: 6px;
+      border: 1px solid #475569;
+      background: #0f172a;
+      color: #fff;
+      text-align: center;
+    }
+
+    /* صورة الملف الشخصي والبيانات */
+    .profile-img {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--accent-color);
+      box-shadow: 0 0 20px rgba(0,0,0,0.4);
+    }
+
+    .profile-name { font-size: 1.5rem; font-weight: 700; text-align: center; }
+    .profile-bio { font-size: 0.95rem; opacity: 0.85; text-align: center; }
+
+    /* القرص الموسيقي الدوار */
+    .music-box {
+      width: 100%;
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .vinyl-record {
+      width: 60px;
+      height: 60px;
+      background: radial-gradient(circle, #333 20%, #111 21%, #111 40%, #222 41%, #000 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      flex-shrink: 0;
+    }
+
+    .vinyl-record.spinning {
+      animation: spin 3s linear infinite;
+    }
+
+    .vinyl-center {
+      width: 20px;
+      height: 20px;
+      background: var(--accent-color);
+      border-radius: 50%;
+      border: 2px solid #fff;
+    }
+
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    .audio-controls { flex: 1; }
+    .audio-controls audio { width: 100%; height: 32px; }
+
+    /* مشغل سبوتيفاي */
+    .spotify-box { width: 100%; border-radius: 12px; overflow: hidden; }
+
+    /* قائمة الروابط */
+    .links-list { width: 100%; display: flex; flex-direction: column; gap: 14px; }
+
+    .link-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      background: var(--card-bg);
+      backdrop-filter: blur(8px);
+      color: var(--text-color);
+      text-decoration: none;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+      font-weight: 600;
+      transition: all 0.25s ease;
+    }
+
+    .link-item:hover {
+      background: var(--card-hover);
+      transform: translateY(-2px);
+      border-color: var(--accent-color);
+    }
+
+    .link-left { display: flex; align-items: center; gap: 12px; }
+    .link-icon { font-size: 1.3rem; }
+    .badge { font-size: 0.75rem; padding: 4px 8px; background: var(--accent-color); color: #000; border-radius: 6px; font-weight: bold; }
+
+    /* زر وقائمة لوحة التعديل للآدمن */
+    .admin-btn {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: var(--accent-color);
+      color: #000;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 30px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+      display: none;
+    }
+
+    /* Modal نافذة التعديل */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 1000;
+      overflow-y: auto;
+      padding: 20px;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: #1e293b;
+      width: 100%;
+      max-width: 500px;
+      padding: 25px;
+      border-radius: 16px;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .modal-content input, .modal-content select {
+      width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #fff;
+    }
+
+    .color-pickers { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .btn { padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+    .btn-primary { background: var(--accent-color); color: #000; }
+    .btn-danger { background: #ef4444; color: #fff; }
+    .btn-close { background: #64748b; color: #fff; }
+  </style>
 </head>
 <body>
 
-<div class="linktree-card">
-    <img src="https://via.placeholder.com/100" alt="Profile" class="profile-img">
-    <h1 class="title">Mytreelincs</h1>
-    <p class="bio">صفحتي الشخصية للروابط</p>
+  <div class="top-nav">
+    <div id="user-status">صفحة عامة</div>
+    <button id="auth-btn" class="btn-auth" onclick="toggleAuth()">🔑 تسجيل الدخول (Google)</button>
+  </div>
 
-    <div class="links-container">
-        <a href="https://github.com" target="_blank" class="link-btn">حسابي على GitHub</a>
-        <a href="https://huggingface.co" target="_blank" class="link-btn">مشاريعي على Hugging Face</a>
-        <a href="#" class="link-btn">الموقع الشخصي</a>
-        <a href="#" class="link-btn">تواصل معي</a>
+  <div id="share-container" class="share-box">
+    <span>🔗 رابط صفحتي الخاص: </span>
+    <input type="text" id="my-share-link" readonly>
+    <button class="btn btn-primary" onclick="copyMyLink()">نسخ</button>
+  </div>
+
+  <div class="container" style="margin-top: 15px;">
+    <img id="view-avatar" class="profile-img" src="https://via.placeholder.com/110" alt="Avatar">
+    <div id="view-name" class="profile-name">جاري التحميل...</div>
+    <div id="view-bio" class="profile-bio">مرحباً بك في صفحة الروابط.</div>
+
+    <!-- مشغل MP3 القرص الدوار -->
+    <div id="audio-box" class="music-box" style="display:none;">
+      <div id="vinyl-record" class="vinyl-record">
+        <div class="vinyl-center"></div>
+      </div>
+      <div class="audio-controls">
+        <audio id="audio-player" controls loop src=""></audio>
+      </div>
     </div>
 
-    <div class="footer">
-        Powered by Firebase & GitHub Pages
+    <!-- مشغل Spotify -->
+    <div id="spotify-box" class="spotify-box" style="display:none;"></div>
+
+    <!-- قائمة الروابط -->
+    <div id="links-container" class="links-list"></div>
+  </div>
+
+  <button id="open-admin-btn" class="admin-btn" onclick="openAdmin()">⚙️ تعديل صفحتي</button>
+
+  <!-- نافذة التعديل الخاص بمالك الصفحة -->
+  <div id="adminModal" class="modal">
+    <div class="modal-content">
+      <h2>⚙️ لوحة تحكم الصفحة</h2>
+      
+      <label>الاسم: <input type="text" id="input-name"></label>
+      <label>الوصف: <input type="text" id="input-bio"></label>
+      <label>رابط الصورة الشخصية: <input type="text" id="input-avatar"></label>
+
+      <h3>🎵 الموسيقى والصوتيات</h3>
+      <label>رابط MP3 مباشر: <input type="text" id="input-audio" placeholder="https://example.com/song.mp3"></label>
+      <label>رابط تراك Spotify: <input type="text" id="input-spotify" placeholder="https://open.spotify.com/track/..."></label>
+
+      <h3>🎨 الألوان والثيم</h3>
+      <div class="color-pickers">
+        <label>خلفية الصفحة: <input type="color" id="input-bg-color" value="#0f172a"></label>
+        <label>لون البطاقة: <input type="color" id="input-card-bg" value="#1e293b"></label>
+        <label>اللون الرئيسي: <input type="color" id="input-accent" value="#38bdf8"></label>
+        <label>لون النص: <input type="color" id="input-text-color" value="#f8fafc"></label>
+      </div>
+
+      <h3>🔗 إضافة رابط جديد</h3>
+      <input type="text" id="new-title" placeholder="عنوان الرابط">
+      <input type="text" id="new-url" placeholder="الرابط الأصلي (https://...)">
+      <input type="text" id="new-icon" placeholder="إيموجي (مثال: 🎵 , 📷 , 🌐)">
+      <select id="new-type">
+        <option value="link">رابط عادي</option>
+        <option value="download">ملف للتحميل 📥</option>
+      </select>
+      <button class="btn btn-primary" onclick="addLink()">إضافة للقائمة</button>
+
+      <h3>📋 الروابط الحالية</h3>
+      <div id="admin-links-list"></div>
+
+      <div style="display: flex; gap: 10px; margin-top: 15px;">
+        <button class="btn btn-primary" style="flex:1;" onclick="saveToFirebase()">حفظ التعديلات في السحابة</button>
+        <button class="btn btn-close" onclick="closeAdmin()">إغلاق</button>
+      </div>
     </div>
-</div>
+  </div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
+  <script>
+    // -------------------------------------------------------------
+    // إعدادات الفايربيس الخاصة بمشروعك (mytreelincs)
+    // -------------------------------------------------------------
+    const firebaseConfig = {
+      apiKey: "AIzaSyDA3zAKOlWPvh8dv8OP57HMSh_yLCvntE8",
+      authDomain: "mytreelincs.firebaseapp.com",
+      projectId: "mytreelincs",
+      storageBucket: "mytreelincs.firebasestorage.app",
+      messagingSenderId: "414449525707",
+      appId: "1:414449525707:web:9b7979909fd67d9d57cc4e",
+      measurementId: "G-77BVJQ3BFH"
+    };
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDA3zAKOlWPvh8dv8OP57HMSh_yLCvntE8",
-    authDomain: "mytreelincs.firebaseapp.com",
-    projectId: "mytreelincs",
-    storageBucket: "mytreelincs.firebasestorage.app",
-    messagingSenderId: "414449525707",
-    appId: "1:414449525707:web:9b7979909fd67d9d57cc4e",
-    measurementId: "G-77BVJQ3BFH"
-  };
+    // تهيئة الفايربيس
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-</script>
+    let currentUser = null;
+    let pageUserId = null; // ID الصفحة المعروضة حالياً
 
+    let configData = {
+      name: "مستخدم جديد",
+      bio: "أهلاً بك في صفحتي الشخصية!",
+      avatar: "https://via.placeholder.com/110",
+      audioUrl: "",
+      spotifyUrl: "",
+      colors: { bg: "#0f172a", card: "#1e293b", accent: "#38bdf8", text: "#f8fafc" },
+      links: []
+    };
+
+    // معرفة أيا صفحة يتم عرضها من خلال رابط الـ URL: ?u=USER_ID
+    const urlParams = new URLSearchParams(window.location.search);
+    pageUserId = urlParams.get('u');
+
+    // مراقبة تسجيل الدخول
+    auth.onAuthStateChanged((user) => {
+      currentUser = user;
+      const authBtn = document.getElementById('auth-btn');
+      const adminBtn = document.getElementById('open-admin-btn');
+      const statusText = document.getElementById('user-status');
+      const shareContainer = document.getElementById('share-container');
+
+      if (user) {
+        authBtn.innerText = `🚪 خروج (${user.displayName ? user.displayName.split(' ')[0] : 'حسابي'})`;
+        
+        // تجهيز رابط المشاركة الخاص بالمالك
+        const myUrl = window.location.origin + window.location.pathname + `?u=${user.uid}`;
+        document.getElementById('my-share-link').value = myUrl;
+        shareContainer.style.display = 'block';
+
+        // إذا الرابط ما بيه u=USER_ID، افتح صفحة المستخدم الحالي تلقائياً
+        if (!pageUserId) {
+          pageUserId = user.uid;
+          window.history.pushState({}, '', `?u=${user.uid}`);
+        }
+
+        // إذا المستخدم هو صاحب الصفحة -> أظهر زر التعديل
+        if (currentUser.uid === pageUserId) {
+          adminBtn.style.display = 'block';
+          statusText.innerText = "أنت في صفحتك الشخصية (المالك)";
+        } else {
+          adminBtn.style.display = 'none';
+          statusText.innerText = "عرض صفحة شخص آخر";
+        }
+      } else {
+        authBtn.innerText = "🔑 تسجيل الدخول (Google)";
+        adminBtn.style.display = 'none';
+        shareContainer.style.display = 'none';
+        statusText.innerText = pageUserId ? "عرض صفحة زائر" : "يرجى تسجيل الدخول أو فتح رابط شخص معين";
+      }
+
+      loadPageData();
+    });
+
+    // تسجيل الدخول أو الخروج
+    function toggleAuth() {
+      if (auth.currentUser) {
+        auth.signOut().then(() => {
+          window.location.href = window.location.pathname; // إعادة توجيه للصفحة الرئيسية
+        });
+      } else {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        auth.signInWithPopup(provider).catch(err => alert("خطأ بتسجيل الدخول: " + err.message));
+      }
+    }
+
+    // نسخ رابط صفحتي
+    function copyMyLink() {
+      const copyText = document.getElementById("my-share-link");
+      copyText.select();
+      navigator.clipboard.writeText(copyText.value);
+      alert("تم نسخ رابط صفحتك بنجاح! تدخله وتقدر تدزه لأي شخص.");
+    }
+
+    // جلب بيانات الصفحة الحالية من Firestore
+    function loadPageData() {
+      if (!pageUserId) {
+        document.getElementById('view-name').innerText = "قم بتسجيل الدخول لإنشاء رابطك الخاص";
+        document.getElementById('view-bio').innerText = "أو اطلب رابط الصفحة من صاحبها لمشاهدتها.";
+        return;
+      }
+
+      db.collection('users').doc(pageUserId).get().then((doc) => {
+        if (doc.exists) {
+          configData = doc.data();
+        } else if (currentUser && currentUser.uid === pageUserId) {
+          // إنشاء بيانات افتراضية إذا كان حساب جديد
+          configData.name = currentUser.displayName || "مستخدم جديد";
+          configData.avatar = currentUser.photoURL || "https://via.placeholder.com/110";
+          saveToFirebase();
+        } else {
+          document.getElementById('view-name').innerText = "الصفحة غير موجودة";
+          document.getElementById('view-bio').innerText = "تأكد من الرابط الصحيح.";
+          return;
+        }
+        renderView();
+      }).catch(err => console.log(err));
+    }
+
+    // عرض واجهة الزائر
+    function renderView() {
+      document.getElementById('view-name').innerText = configData.name || "مستخدم";
+      document.getElementById('view-bio').innerText = configData.bio || "";
+      document.getElementById('view-avatar').src = configData.avatar || "https://via.placeholder.com/110";
+
+      // تطبيق الألوان
+      if(configData.colors) {
+        document.documentElement.style.setProperty('--bg-color', configData.colors.bg || '#0f172a');
+        document.documentElement.style.setProperty('--card-bg', configData.colors.card || '#1e293b');
+        document.documentElement.style.setProperty('--accent-color', configData.colors.accent || '#38bdf8');
+        document.documentElement.style.setProperty('--text-color', configData.colors.text || '#f8fafc');
+      }
+
+      // MP3
+      const audioBox = document.getElementById('audio-box');
+      const audioPlayer = document.getElementById('audio-player');
+      const vinyl = document.getElementById('vinyl-record');
+
+      if (configData.audioUrl) {
+        audioPlayer.src = configData.audioUrl;
+        audioBox.style.display = 'flex';
+        audioPlayer.onplay = () => vinyl.classList.add('spinning');
+        audioPlayer.onpause = () => vinyl.classList.remove('spinning');
+      } else {
+        audioBox.style.display = 'none';
+      }
+
+      // Spotify
+      const spotifyBox = document.getElementById('spotify-box');
+      if (configData.spotifyUrl) {
+        let embedUrl = configData.spotifyUrl;
+        if (embedUrl.includes('open.spotify.com/track/')) {
+          embedUrl = embedUrl.replace('open.spotify.com/track/', 'open.spotify.com/embed/track/');
+        }
+        spotifyBox.style.display = 'block';
+        spotifyBox.innerHTML = `<iframe src="${embedUrl}" width="100%" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>`;
+      } else {
+        spotifyBox.style.display = 'none';
+      }
+
+      // الروابط
+      const container = document.getElementById('links-container');
+      container.innerHTML = '';
+      (configData.links || []).forEach(item => {
+        const a = document.createElement('a');
+        a.className = 'link-item';
+        a.href = item.url;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        if (item.type === 'download') a.setAttribute('download', '');
+
+        a.innerHTML = `
+          <div class="link-left">
+            <span class="link-icon">${item.icon || '🔗'}</span>
+            <span>${item.title}</span>
+          </div>
+          ${item.type === 'download' ? '<span class="badge">تحميل 📥</span>' : ''}
+        `;
+        container.appendChild(a);
+      });
+    }
+
+    // فتح نافذة التحكم
+    function openAdmin() {
+      document.getElementById('input-name').value = configData.name || '';
+      document.getElementById('input-bio').value = configData.bio || '';
+      document.getElementById('input-avatar').value = configData.avatar || '';
+      document.getElementById('input-audio').value = configData.audioUrl || '';
+      document.getElementById('input-spotify').value = configData.spotifyUrl || '';
+
+      if (configData.colors) {
+        document.getElementById('input-bg-color').value = configData.colors.bg || '#0f172a';
+        document.getElementById('input-card-bg').value = configData.colors.card || '#1e293b';
+        document.getElementById('input-accent').value = configData.colors.accent || '#38bdf8';
+        document.getElementById('input-text-color').value = configData.colors.text || '#f8fafc';
+      }
+
+      renderAdminLinks();
+      document.getElementById('adminModal').style.display = 'flex';
+    }
+
+    function closeAdmin() { document.getElementById('adminModal').style.display = 'none'; }
+
+    function renderAdminLinks() {
+      const list = document.getElementById('admin-links-list');
+      list.innerHTML = '';
+      (configData.links || []).forEach((item, index) => {
+        const div = document.createElement('div');
+        div.style.cssText = "display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; background:#0f172a; padding:8px; border-radius:6px;";
+        div.innerHTML = `
+          <span>${item.icon || '🔗'} ${item.title}</span>
+          <button class="btn btn-danger" onclick="removeLink(${index})">حذف</button>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    function addLink() {
+      const title = document.getElementById('new-title').value;
+      const url = document.getElementById('new-url').value;
+      const icon = document.getElementById('new-icon').value;
+      const type = document.getElementById('new-type').value;
+
+      if (!title || !url) return alert('يرجى كتابة العنوان والرابط');
+
+      if (!configData.links) configData.links = [];
+      configData.links.push({ title, url, icon, type });
+      document.getElementById('new-title').value = '';
+      document.getElementById('new-url').value = '';
+      renderAdminLinks();
+    }
+
+    function removeLink(index) {
+      configData.links.splice(index, 1);
+      renderAdminLinks();
+    }
+
+    // حفظ البيانات في قاعدة البيانات Firestore
+    function saveToFirebase() {
+      if (!currentUser || currentUser.uid !== pageUserId) return alert("غير مصرح لك بالعديل على هذه الصفحة!");
+
+      configData.name = document.getElementById('input-name').value;
+      configData.bio = document.getElementById('input-bio').value;
+      configData.avatar = document.getElementById('input-avatar').value;
+      configData.audioUrl = document.getElementById('input-audio').value;
+      configData.spotifyUrl = document.getElementById('input-spotify').value;
+
+      configData.colors = {
+        bg: document.getElementById('input-bg-color').value,
+        card: document.getElementById('input-card-bg').value,
+        accent: document.getElementById('input-accent').value,
+        text: document.getElementById('input-text-color').value
+      };
+
+      db.collection('users').doc(currentUser.uid).set(configData).then(() => {
+        alert("تم حفظ معلوماتك بنجاح على قاعدة بيانات الفايربيس!");
+        renderView();
+        closeAdmin();
+      }).catch(err => alert("خطأ بالحفظ: " + err.message));
+    }
+  </script>
 </body>
 </html>
